@@ -2,46 +2,86 @@
 <html>
 <head>
 <title>EPM</title>
+
+<style>
+body {
+    font-family: sans-serif;
+    font-size: 12px;
+    background: ButtonFace;
+    color: ButtonText;
+    margin: 10px;
+}
+
+.window {
+    width: 280px;
+    border: 1px solid ButtonShadow;
+    padding: 8px;
+    background: ButtonFace;
+}
+
+.title {
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td {
+    padding: 2px;
+    vertical-align: middle;
+}
+
+.label {
+    width: 70px;
+}
+
+input {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.buttons {
+    margin-top: 8px;
+    text-align: right;
+}
+
+button {
+    font-family: inherit;
+    font-size: 12px;
+    margin-left: 4px;
+}
+</style>
+
 </head>
 
 <body>
 
-<table border="1" cellpadding="5" cellspacing="0" width="600">
+<div class="window">
 
+<div class="title">EPM v1.02</div>
+
+<table>
 <tr>
-<th align="center">
-<big><big>EPM v1.02</big></big><br>
-</th>
+    <td class="label">DEBUG</td>
+    <td><input id="debug" value="---" readonly></td>
 </tr>
-
-<tr>
-<td>
-
-<pre>
-DEBUG:  <span id="debug">---</span>
-
-RUNTIME: <span id="runtime">0s</span>
-
-<span id="message"></span>
-</pre>
-
-</td>
-</tr>
-
-<tr>
-<td>
-<a href="#" onclick="toggleExit(); return false;">EXIT (1)</a>&nbsp;&nbsp;
-<a href="#" onclick="refresh(); return false;">REFRESH (2)</a>
-</td>
-</tr>
-
 </table>
 
+<div class="buttons">
+    <button onclick="toggleExit()">Exit</button>
+    <button onclick="refresh()">Refresh</button>
+</div>
+
+</div>
+
 <script>
-let runtime = 0;
 let running = true;
 
-/* Service checks */
 function checkServices(){
     let services = {
         online: navigator.onLine,
@@ -51,70 +91,48 @@ function checkServices(){
         cookies: navigator.cookieEnabled
     };
 
-    let total = Object.keys(services).length;
-    let active = Object.values(services).filter(v => v).length;
-
-    return { active, total, services };
+    return services;
 }
 
-/* Debug code (deterministic) */
 function generateDebug(services){
     let values = Object.values(services).map(v => v ? 1 : 0).join("");
     let num = parseInt(values, 2) || 0;
     return (100 + num).toString().slice(0,3);
 }
 
-/* Message */
-function updateMessage(){
-    let { active, total, services } = checkServices();
+function updateDebug(){
+    let services = checkServices();
 
-    document.getElementById("message").innerText =
-        active + "/" + total + " services active.";
-
-    document.getElementById("debug").innerText =
+    document.getElementById("debug").value =
         generateDebug(services);
 }
 
-/* Runtime */
-function updateRuntime(){
-    if(running){
-        runtime++;
-        document.getElementById("runtime").innerText = runtime + "s";
-    }
-}
-
-/* Exit */
 function toggleExit(){
     running = !running;
 
     if(!running){
-        document.getElementById("message").innerText =
-            "Execution halted.";
+        document.getElementById("debug").value = "---";
     } else {
-        updateMessage();
+        updateDebug();
     }
 }
 
-/* Refresh */
 function refresh(){
-    updateMessage();
+    updateDebug();
 }
 
-/* Keyboard */
 document.addEventListener("keydown", function(e){
     if(e.key === "1") toggleExit();
     if(e.key === "2") refresh();
 });
 
-/* Loop */
 setInterval(function(){
-    updateRuntime();
-    updateMessage();
+    if(running){
+        updateDebug();
+    }
 }, 1000);
 
-/* Init */
-updateMessage();
-
+updateDebug();
 </script>
 
 </body>
